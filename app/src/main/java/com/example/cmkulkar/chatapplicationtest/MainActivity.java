@@ -37,7 +37,6 @@ public class MainActivity extends AppCompatActivity {
         chatNames = new ArrayAdapter<String>(this,android.R.layout.simple_list_item_1);
         dbRef = database.getReference("Users");
         listview.setAdapter(chatNames);
-        chatNames.add("TempUser");
 
         dbRef.addValueEventListener(new ValueEventListener() {
             @Override
@@ -65,6 +64,7 @@ public class MainActivity extends AppCompatActivity {
     }
 
     public void collectUserNames(Map<String, Object> users) {
+        chatNames.clear();
         for (Map.Entry<String, Object> entry : users.entrySet()) {
             chatNames.add(entry.getKey().toString());
             textView.setText(entry.getKey().toString());

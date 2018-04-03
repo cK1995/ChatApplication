@@ -12,6 +12,7 @@ import android.widget.Toast;
 import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
+import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.database.ValueEventListener;
 
 import java.util.Map;
@@ -25,6 +26,11 @@ public class Login extends AppCompatActivity {
     FireBaseDatabaseConstants databaseConstants;
     String userID,passwd = null;
     String userEnteredEmail,userEnteredPasswd;
+    public static boolean isCloudExecuted = false;
+    public static String loggedInAs;
+
+    final FirebaseDatabase database = FirebaseDatabase.getInstance();
+    DatabaseReference dbRef = database.getReference().child("Users");
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -35,6 +41,7 @@ public class Login extends AppCompatActivity {
         password = (EditText) findViewById(R.id.PasswordET);
         login = (Button) findViewById(R.id.btnLogin);
         errorMsg = (TextView) findViewById(R.id.errorMessage);
+        databaseConstants = new FireBaseDatabaseConstants();
 
         login.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -42,28 +49,32 @@ public class Login extends AppCompatActivity {
                 userEnteredEmail = email.getText().toString();
                 userEnteredPasswd = password.getText().toString();
 
-                databaseConstants.setDatabaseReference("Users");
-                databaseConstants.getDatabaseReference().addValueEventListener(new ValueEventListener() {
+                dbRef.addValueEventListener(new ValueEventListener() {
                     @Override
                     public void onDataChange(DataSnapshot dataSnapshot) {
+                        isCloudExecuted = true;
                         for (DataSnapshot data : dataSnapshot.getChildren()) {
                             userID = data.getKey().toString();
                             if (userID.equals(userEnteredEmail)) {
-                                passwd = data.child("Password").getValue().toString();
+                                passwd = data.child("AccountInfo").child("Password").getValue().toString();
                             }
                         }
-                        Toast.makeText(getApplicationContext(),"Inside Cloud Function",Toast.LENGTH_SHORT);
+                        Toast.makeText(getApplicationContext(), "Inside Cloud Function", Toast.LENGTH_SHORT);
                     }
 
                     @Override
                     public void onCancelled(DatabaseError databaseError) {
-
+                        errorMsg.setText("Database Connection cancelled");
                     }
                 });
-                if (passwd == null) {
+                if (isCloudExecuted == false) {
+                    errorMsg.setText("Press Login button again");
+                }
+                else if (passwd == null) {
                     errorMsg.setText("User not present");
                 }
                 else if (passwd.equals(userEnteredPasswd)) {
+                    loggedInAs = userEnteredEmail;
                     Intent intent = new Intent(getApplicationContext(),MainActivity.class);
                     startActivity(intent);
                 }
