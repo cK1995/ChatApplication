@@ -1,5 +1,7 @@
 package com.example.cmkulkar.chatapplicationtest;
 
+import android.content.Context;
+import android.content.SharedPreferences;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.view.View;
@@ -25,11 +27,15 @@ public class ChatScreen extends AppCompatActivity {
     FireBaseDatabaseConstants databaseConstants;
     ArrayAdapter<String> messagesReceived;
     private String messageId;
+    private String loggedInAs;
+    SharedPreferences sp;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_chat_screen);
+
+        sp = getSharedPreferences("MyPref", Context.MODE_PRIVATE);
 
         textView = (TextView) findViewById(R.id.chatDetails);
         textView.setText(MainActivity.chatPersonName);
@@ -38,16 +44,10 @@ public class ChatScreen extends AppCompatActivity {
         messageList = (ListView) findViewById(R.id.messageListView);
         databaseConstants = new FireBaseDatabaseConstants();
         databaseConstants.setDatabaseReference();
-        dbRef = databaseConstants.getDatabaseReference().child("Users").child(Login.loggedInAs).child("Chats").child(MainActivity.chatPersonName);
+        loggedInAs = sp.getString("loggedInAs","");
+        dbRef = databaseConstants.getDatabaseReference().child("Users").child(loggedInAs).child("Chats").child(MainActivity.chatPersonName);
         messagesReceived = new ArrayAdapter<String>(this,android.R.layout.simple_list_item_1);
         messageList.setAdapter(messagesReceived);
-
-        messageTextView.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                messageTextView.setText("");
-            }
-        });
 
         dbRef.addValueEventListener(new ValueEventListener() {
             @Override
@@ -76,8 +76,15 @@ public class ChatScreen extends AppCompatActivity {
             public void onClick(View v) {
                 dbRef.child(messageId).setValue("To:" + messageTextView.getText().toString());
                 int i = Integer.parseInt(messageId);
-                i--;
+                i++;
                 dbRef.child("messageId").setValue(Integer.toString(i));
+            }
+        });
+
+        messageTextView.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                messageTextView.setText("");
             }
         });
     }

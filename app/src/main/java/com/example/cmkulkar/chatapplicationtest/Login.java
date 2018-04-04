@@ -1,6 +1,8 @@
 package com.example.cmkulkar.chatapplicationtest;
 
+import android.content.Context;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.view.View;
@@ -27,7 +29,9 @@ public class Login extends AppCompatActivity {
     String userID,passwd = null;
     String userEnteredEmail,userEnteredPasswd;
     public static boolean isCloudExecuted = false;
-    public static String loggedInAs;
+    //public static String loggedInAs;
+    SharedPreferences sp;
+    SharedPreferences.Editor spEditor;
 
     final FirebaseDatabase database = FirebaseDatabase.getInstance();
     DatabaseReference dbRef = database.getReference().child("Users");
@@ -42,6 +46,20 @@ public class Login extends AppCompatActivity {
         login = (Button) findViewById(R.id.btnLogin);
         errorMsg = (TextView) findViewById(R.id.errorMessage);
         databaseConstants = new FireBaseDatabaseConstants();
+        sp = this.getSharedPreferences("MyPref", Context.MODE_PRIVATE);
+        spEditor = sp.edit();
+
+        Boolean islogged = sp.getBoolean("isUserLoggedIn",false);
+
+        errorMsg.setText("The Logged In value is " + islogged);
+
+        if (islogged) {
+            Intent intent = new Intent(this,MainActivity.class);
+            intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
+            intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+            startActivity(intent);
+            finish();
+        }
 
         login.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -74,9 +92,16 @@ public class Login extends AppCompatActivity {
                     errorMsg.setText("User not present");
                 }
                 else if (passwd.equals(userEnteredPasswd)) {
-                    loggedInAs = userEnteredEmail;
+                    //loggedInAs = userEnteredEmail;
+                    spEditor.putString("loggedInAs",userEnteredEmail);
+                    spEditor.commit();
+                    spEditor.putBoolean("isUserLoggedIn",true);
+                    spEditor.commit();
                     Intent intent = new Intent(getApplicationContext(),MainActivity.class);
+                    intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
+                    intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
                     startActivity(intent);
+                    finish();
                 }
                 else {
                     errorMsg.setText("Invalid Password");
