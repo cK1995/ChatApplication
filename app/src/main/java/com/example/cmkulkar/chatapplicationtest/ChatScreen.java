@@ -23,7 +23,7 @@ public class ChatScreen extends AppCompatActivity {
     TextView messageTextView;
     Button sendButton;
     ListView messageList;
-    DatabaseReference dbRef;
+    DatabaseReference dbRef,dbRef2;
     FireBaseDatabaseConstants databaseConstants;
     ArrayAdapter<String> messagesReceived;
     private String messageId;
@@ -46,6 +46,7 @@ public class ChatScreen extends AppCompatActivity {
         databaseConstants.setDatabaseReference();
         loggedInAs = sp.getString("loggedInAs","");
         dbRef = databaseConstants.getDatabaseReference().child("Users").child(loggedInAs).child("Chats").child(MainActivity.chatPersonName);
+        dbRef2 = databaseConstants.getDatabaseReference().child("Users").child(MainActivity.chatPersonName).child("Chats").child(loggedInAs);
         messagesReceived = new ArrayAdapter<String>(this,android.R.layout.simple_list_item_1);
         messageList.setAdapter(messagesReceived);
 
@@ -78,6 +79,8 @@ public class ChatScreen extends AppCompatActivity {
                 int i = Integer.parseInt(messageId);
                 i++;
                 dbRef.child("messageId").setValue(Integer.toString(i));
+                dbRef2.child(messageId).setValue("From:" + messageTextView.getText().toString());
+                dbRef2.child("messageId").setValue(Integer.toString(i));
             }
         });
 

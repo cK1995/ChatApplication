@@ -11,9 +11,9 @@
         android:layout_width="379dp"
         android:layout_height="40dp"
         android:text="Chat Person Name"
+        tools:ignore="MissingConstraints"
         tools:layout_editor_absoluteX="0dp"
-        tools:layout_editor_absoluteY="0dp"
-        tools:ignore="MissingConstraints" />
+        tools:layout_editor_absoluteY="0dp" />
 
     <Button
         android:id="@+id/btnSend"

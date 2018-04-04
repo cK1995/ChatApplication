@@ -51,8 +51,6 @@ public class Login extends AppCompatActivity {
 
         Boolean islogged = sp.getBoolean("isUserLoggedIn",false);
 
-        errorMsg.setText("The Logged In value is " + islogged);
-
         if (islogged) {
             Intent intent = new Intent(this,MainActivity.class);
             intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);

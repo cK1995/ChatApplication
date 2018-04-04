@@ -1,11 +1,14 @@
 package com.example.cmkulkar.chatapplicationtest;
 
+import android.content.Context;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.view.View;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
+import android.widget.Button;
 import android.widget.ListView;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -22,10 +25,14 @@ public class MainActivity extends AppCompatActivity {
 
     ListView listview;
     TextView textView;
+    Button logoutButton;
     ArrayAdapter<String> chatNames;
     final FirebaseDatabase database = FirebaseDatabase.getInstance();
     DatabaseReference dbRef;
     public static String chatPersonName = "";
+    public String loggedInAs;
+    SharedPreferences sp;
+    SharedPreferences.Editor spEditor;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -34,9 +41,13 @@ public class MainActivity extends AppCompatActivity {
 
         listview = (ListView) findViewById(R.id.chatList);
         textView = (TextView) findViewById(R.id.textView);
+        logoutButton = (Button) findViewById(R.id.btnLogout);
         chatNames = new ArrayAdapter<String>(this,android.R.layout.simple_list_item_1);
         dbRef = database.getReference("Users");
         listview.setAdapter(chatNames);
+        sp = getSharedPreferences("MyPref", Context.MODE_PRIVATE);
+        spEditor = sp.edit();
+        loggedInAs = sp.getString("loggedInAs","");
 
         dbRef.addValueEventListener(new ValueEventListener() {
             @Override
@@ -61,13 +72,25 @@ public class MainActivity extends AppCompatActivity {
             }
         });
 
+        logoutButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                spEditor.putBoolean("isUserLoggedIn",false);
+                spEditor.commit();
+                Intent intent = new Intent(getApplicationContext(),Login.class);
+                startActivity(intent);
+                finish();
+            }
+        });
+
     }
 
     public void collectUserNames(Map<String, Object> users) {
         chatNames.clear();
         for (Map.Entry<String, Object> entry : users.entrySet()) {
-            chatNames.add(entry.getKey().toString());
-            textView.setText(entry.getKey().toString());
+            if (! entry.getKey().toString().equals(loggedInAs)) {
+                chatNames.add(entry.getKey().toString());
+            }
         }
     }
 }
